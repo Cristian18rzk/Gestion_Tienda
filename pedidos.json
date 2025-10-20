@@ -1,0 +1,23 @@
+
+
+
+
+
+[
+    {
+        "id_pedido": 1,
+        "id_cliente": 101,
+        "nombre_cliente": "Ana Garc\u00eda",
+        "fecha_pedido": "2025-10-20 08:15:49",
+        "items": [
+            {
+                "id_producto": 4,
+                "nombre": "Pollo",
+                "cantidad": 2,
+                "precio_unitario": 2700.0,
+                "subtotal": 5400.0
+            }
+        ],
+        "total_pedido": 5400.0
+    }
+]
