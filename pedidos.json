@@ -1,23 +1,41 @@
-
-
-
-
-
 [
     {
         "id_pedido": 1,
-        "id_cliente": 101,
-        "nombre_cliente": "Ana Garc\u00eda",
+        "id_cliente": 6,
+        "nombre_cliente": "Juan Perez",
         "fecha_pedido": "2025-10-20 08:15:49",
         "items": [
             {
-                "id_producto": 4,
-                "nombre": "Pollo",
+                "id_producto": 1,
+                "nombre": "Arroz",
                 "cantidad": 2,
-                "precio_unitario": 2700.0,
-                "subtotal": 5400.0
+                "precio_unitario": 12000.0,
+                "subtotal": 4500.0
             }
         ],
-        "total_pedido": 5400.0
+        "total_pedido": 24000.0
+    },
+    {
+        "id_pedido": 2,
+        "id_cliente": 3,
+        "nombre_cliente": "Alejandro Zapata",
+        "fecha_pedido": "2025-10-21 20:27:24",
+        "items": [
+            {
+                "id_producto": 1,
+                "nombre": "Arroz",
+                "cantidad": 4,
+                "precio_unitario": 12000.0,
+                "subtotal": 48000.0
+            },
+            {
+                "id_producto": 3,
+                "nombre": "Sal",
+                "cantidad": 2,
+                "precio_unitario": 2500.0,
+                "subtotal": 5000.0
+            }
+        ],
+        "total_pedido": 53000.0
     }
 ]

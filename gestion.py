@@ -106,7 +106,6 @@ class Tienda:
         console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.", style="red")
         return False
 
-    # (El resto del CRUD para Clientes seguiría la misma estructura)
 
     # --- Funcionalidad: Crear nuevo Pedido ---
 
@@ -179,7 +178,9 @@ class Tienda:
     def buscar_productos_por_nombre(self, termino):
         return [p for p in self.productos.values() if termino.lower() in p.nombre.lower()]
 
-    # --- Reto Final: Reporte de ventas simple ---
+    #
+    #
+    #  Reto Final: Reporte de ventas simple
 
     def generar_reporte_ventas(self):
         total_vendido = sum(pedido.get('total_pedido', 0) for pedido in self.pedidos)
