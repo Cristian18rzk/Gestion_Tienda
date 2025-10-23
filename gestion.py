@@ -1,17 +1,13 @@
 from builtins import ValueError
 from datetime import datetime
 from persistencia import PersistenciaCSV, PersistenciaJSON
-from rich.console import Console  # Para usar rich en los mensajes de la lógica
+from rich.console import Console
 
 console = Console()
 
 
-# =======================
-# Clases de Entidad
-# =======================
-
 class Producto:
-    def __init__(self, id_producto, nombre, precio, stock):
+    def __init__(self, id_producto, nombre, precio, stock):  # CAMBIADO: __init__
         self.id_producto = int(id_producto)
         self.nombre = nombre
         self.precio = float(precio)
@@ -25,29 +21,27 @@ class Producto:
 
 
 class Cliente:
-    def __init__(self, id_cliente, nombre, email):
+    def __init__(self, id_cliente, nombre, email):  # CAMBIADO: __init__
         self.id_cliente = int(id_cliente)
         self.nombre = nombre
         self.email = email
 
-    def __str__(self):
+    def __str__(self):  # CAMBIADO: __str__
         return f"ID: {self.id_cliente} | Nombre: {self.nombre} | Email: {self.email}"
 
     def to_dict(self):
         return {'id_cliente': self.id_cliente, 'nombre': self.nombre, 'email': self.email}
 
 
-# =======================
-# Clase de Gestión de Tienda
-# =======================
-
 class Tienda:
     def __init__(self):
         self.productos = self._cargar_productos()
         self.clientes = self._cargar_clientes()
-        self.pedidos = PersistenciaJSON.leer_pedidos('pedidos.json')
+        # --- Corrección: garantizar que pedidos siempre sea lista ---
+        pedidos_cargados = PersistenciaJSON.leer_pedidos('pedidos.json')
+        self.pedidos = pedidos_cargados if isinstance(pedidos_cargados, list) else []
 
-    # --- Métodos Privados (Auxiliares de Persistencia) ---
+    # ... (el resto del código permanece igual)
 
     def _cargar_productos(self):
         datos = PersistenciaCSV.leer_datos('productos.csv', ['id_producto', 'nombre', 'precio', 'stock'])
@@ -62,20 +56,17 @@ class Tienda:
                                        ['id_producto', 'nombre', 'precio', 'stock'])
 
     def _guardar_clientes(self):
-        PersistenciaCSV.escribir_datos('clientes.csv', list(self.clientes.values()), ['id_cliente', 'nombre', 'email'])
+        PersistenciaCSV.escribir_datos('clientes.csv', list(self.clientes.values()),
+                                       ['id_cliente', 'nombre', 'email'])
 
     def _guardar_pedidos(self):
         PersistenciaJSON.escribir_pedidos('pedidos.json', self.pedidos)
-
-    # --- Métodos CRUD Genéricos ---
 
     def obtener_siguiente_id(self, coleccion):
         return max(coleccion.keys()) + 1 if coleccion else 1
 
     def obtener_lista(self, coleccion):
         return list(coleccion.values())
-
-    # --- CRUD Productos ---
 
     def agregar_producto(self, nombre, precio, stock):
         nuevo_id = self.obtener_siguiente_id(self.productos)
@@ -90,9 +81,13 @@ class Tienda:
             console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.", style="red")
             return False
 
-        if nombre is not None: prod.nombre = nombre
-        if precio is not None: prod.precio = float(precio)
-        if stock is not None: prod.stock = int(stock)
+        if nombre is not None:
+            prod.nombre = nombre
+        if precio is not None:
+            prod.precio = float(precio)
+        if stock is not None:
+            prod.stock = int(stock)
+
         self._guardar_productos()
         console.print(f"[bold green]✔ Producto ID {id_prod} actualizado.[/bold green]")
         return True
@@ -106,12 +101,7 @@ class Tienda:
         console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.", style="red")
         return False
 
-    # (El resto del CRUD para Clientes seguiría la misma estructura)
-
-    # --- Funcionalidad: Crear nuevo Pedido ---
-
     def crear_pedido(self, id_cliente, productos_con_cantidad):
-        """productos_con_cantidad: {id_producto: cantidad_comprada}"""
         if id_cliente not in self.clientes:
             console.print("[bold red]✗ Error:[/bold red] Cliente no encontrado.", style="red")
             return
@@ -119,7 +109,6 @@ class Tienda:
         items_pedido = []
         costo_total = 0
 
-        # Validar y actualizar stock antes de registrar
         for id_prod_str, cantidad in productos_con_cantidad.items():
             try:
                 id_prod = int(id_prod_str)
@@ -140,7 +129,6 @@ class Tienda:
                     style="red")
                 return
 
-            # Si pasa la validación, actualiza el stock y prepara el item
             producto.stock -= cantidad
 
             items_pedido.append({
@@ -152,8 +140,12 @@ class Tienda:
             })
             costo_total += items_pedido[-1]['subtotal']
 
-        # Registrar el Pedido
-        nuevo_id = self.obtener_siguiente_id({p['id_pedido']: p for p in self.pedidos})
+        # --- Corrección: generación segura del ID ---
+        if not self.pedidos:
+            nuevo_id = 1
+        else:
+            nuevo_id = max(p['id_pedido'] for p in self.pedidos) + 1
+
         nuevo_pedido = {
             'id_pedido': nuevo_id,
             'id_cliente': id_cliente,
@@ -167,9 +159,8 @@ class Tienda:
         self._guardar_productos()
         self._guardar_pedidos()
         console.print(
-            f"\n[bold green]✅ Pedido {nuevo_id} creado exitosamente.[/bold green] Total: [bold yellow]${costo_total:.2f}[/bold yellow]")
-
-    # --- Funcionalidad: Historial de pedidos y Búsqueda ---
+            f"\n[bold green]✅ Pedido {nuevo_id} creado exitosamente.[/bold green] Total: [bold yellow]${costo_total:.2f}[/bold yellow]"
+        )
 
     def historial_pedidos_cliente(self, id_cliente):
         if id_cliente not in self.clientes:
@@ -178,8 +169,6 @@ class Tienda:
 
     def buscar_productos_por_nombre(self, termino):
         return [p for p in self.productos.values() if termino.lower() in p.nombre.lower()]
-
-    # --- Reto Final: Reporte de ventas simple ---
 
     def generar_reporte_ventas(self):
         total_vendido = sum(pedido.get('total_pedido', 0) for pedido in self.pedidos)

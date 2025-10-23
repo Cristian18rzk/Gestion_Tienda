@@ -1,6 +1,7 @@
 id_producto,nombre,precio,stock
-1,Leche Entera,1.5,48
-2,Pan Integral,2.75,30
-3,Huevos Docena,3.0,20
-4,Pollo,2700.0,2
-5,Carne,10000.0,50
+1,Yogurt griego,4500.0,6
+2,Cereal,12500.0,12
+3,Leche,4000.0,12
+4,Papel Higienico,2500.0,20
+5,Pan,500.0,22
+6,Carne,15000.0,5
