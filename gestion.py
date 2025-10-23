@@ -17,7 +17,12 @@ class Producto:
         return f"ID: {self.id_producto} | Nombre: {self.nombre} | Precio: ${self.precio:.2f} | Stock: {self.stock}"
 
     def to_dict(self):
-        return {'id_producto': self.id_producto, 'nombre': self.nombre, 'precio': self.precio, 'stock': self.stock}
+        return {
+            "id_producto": self.id_producto,
+            "nombre": self.nombre,
+            "precio": self.precio,
+            "stock": self.stock,
+        }
 
 
 class Cliente:
@@ -30,7 +35,11 @@ class Cliente:
         return f"ID: {self.id_cliente} | Nombre: {self.nombre} | Email: {self.email}"
 
     def to_dict(self):
-        return {'id_cliente': self.id_cliente, 'nombre': self.nombre, 'email': self.email}
+        return {
+            "id_cliente": self.id_cliente,
+            "nombre": self.nombre,
+            "email": self.email,
+        }
 
 
 class Tienda:
@@ -38,29 +47,39 @@ class Tienda:
         self.productos = self._cargar_productos()
         self.clientes = self._cargar_clientes()
         # --- Corrección: garantizar que pedidos siempre sea lista ---
-        pedidos_cargados = PersistenciaJSON.leer_pedidos('pedidos.json')
+        pedidos_cargados = PersistenciaJSON.leer_pedidos("pedidos.json")
         self.pedidos = pedidos_cargados if isinstance(pedidos_cargados, list) else []
 
     # ... (el resto del código permanece igual)
 
     def _cargar_productos(self):
-        datos = PersistenciaCSV.leer_datos('productos.csv', ['id_producto', 'nombre', 'precio', 'stock'])
-        return {int(p['id_producto']): Producto(**p) for p in datos}
+        datos = PersistenciaCSV.leer_datos(
+            "productos.csv", ["id_producto", "nombre", "precio", "stock"]
+        )
+        return {int(p["id_producto"]): Producto(**p) for p in datos}
 
     def _cargar_clientes(self):
-        datos = PersistenciaCSV.leer_datos('clientes.csv', ['id_cliente', 'nombre', 'email'])
-        return {int(c['id_cliente']): Cliente(**c) for c in datos}
+        datos = PersistenciaCSV.leer_datos(
+            "clientes.csv", ["id_cliente", "nombre", "email"]
+        )
+        return {int(c["id_cliente"]): Cliente(**c) for c in datos}
 
     def _guardar_productos(self):
-        PersistenciaCSV.escribir_datos('productos.csv', list(self.productos.values()),
-                                       ['id_producto', 'nombre', 'precio', 'stock'])
+        PersistenciaCSV.escribir_datos(
+            "productos.csv",
+            list(self.productos.values()),
+            ["id_producto", "nombre", "precio", "stock"],
+        )
 
     def _guardar_clientes(self):
-        PersistenciaCSV.escribir_datos('clientes.csv', list(self.clientes.values()),
-                                       ['id_cliente', 'nombre', 'email'])
+        PersistenciaCSV.escribir_datos(
+            "clientes.csv",
+            list(self.clientes.values()),
+            ["id_cliente", "nombre", "email"],
+        )
 
     def _guardar_pedidos(self):
-        PersistenciaJSON.escribir_pedidos('pedidos.json', self.pedidos)
+        PersistenciaJSON.escribir_pedidos("pedidos.json", self.pedidos)
 
     def obtener_siguiente_id(self, coleccion):
         return max(coleccion.keys()) + 1 if coleccion else 1
@@ -73,12 +92,17 @@ class Tienda:
         nuevo_producto = Producto(nuevo_id, nombre, precio, stock)
         self.productos[nuevo_id] = nuevo_producto
         self._guardar_productos()
-        console.print(f"[bold green]✔ Producto '{nombre}' agregado con ID {nuevo_id}.[/bold green]")
+        console.print(
+            f"[bold green]✔ Producto '{nombre}' agregado con ID {nuevo_id}.[/bold green]"
+        )
 
     def actualizar_producto(self, id_prod, nombre=None, precio=None, stock=None):
         prod = self.productos.get(id_prod)
         if not prod:
-            console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.", style="red")
+            console.print(
+                f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.",
+                style="red",
+            )
             return False
 
         if nombre is not None:
@@ -96,14 +120,21 @@ class Tienda:
         if id_prod in self.productos:
             del self.productos[id_prod]
             self._guardar_productos()
-            console.print(f"[bold green]✔ Producto ID {id_prod} eliminado.[/bold green]")
+            console.print(
+                f"[bold green]✔ Producto ID {id_prod} eliminado.[/bold green]"
+            )
             return True
-        console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.", style="red")
+        console.print(
+            f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado.",
+            style="red",
+        )
         return False
 
     def crear_pedido(self, id_cliente, productos_con_cantidad):
         if id_cliente not in self.clientes:
-            console.print("[bold red]✗ Error:[/bold red] Cliente no encontrado.", style="red")
+            console.print(
+                "[bold red]✗ Error:[/bold red] Cliente no encontrado.", style="red"
+            )
             return
 
         items_pedido = []
@@ -114,45 +145,53 @@ class Tienda:
                 id_prod = int(id_prod_str)
                 cantidad = int(cantidad)
             except ValueError:
-                console.print("[bold red]✗ Error:[/bold red] ID de producto o cantidad inválida.", style="red")
+                console.print(
+                    "[bold red]✗ Error:[/bold red] ID de producto o cantidad inválida.",
+                    style="red",
+                )
                 return
 
             producto = self.productos.get(id_prod)
             if not producto:
-                console.print(f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado. Pedido cancelado.",
-                              style="red")
+                console.print(
+                    f"[bold red]✗ Error:[/bold red] Producto ID {id_prod} no encontrado. Pedido cancelado.",
+                    style="red",
+                )
                 return
 
             if producto.stock < cantidad:
                 console.print(
                     f"[bold red]✗ Error:[/bold red] Stock insuficiente para {producto.nombre}. Pedido cancelado.",
-                    style="red")
+                    style="red",
+                )
                 return
 
             producto.stock -= cantidad
 
-            items_pedido.append({
-                'id_producto': id_prod,
-                'nombre': producto.nombre,
-                'cantidad': cantidad,
-                'precio_unitario': producto.precio,
-                'subtotal': round(producto.precio * cantidad, 2)
-            })
-            costo_total += items_pedido[-1]['subtotal']
+            items_pedido.append(
+                {
+                    "id_producto": id_prod,
+                    "nombre": producto.nombre,
+                    "cantidad": cantidad,
+                    "precio_unitario": producto.precio,
+                    "subtotal": round(producto.precio * cantidad, 2),
+                }
+            )
+            costo_total += items_pedido[-1]["subtotal"]
 
         # --- Corrección: generación segura del ID ---
         if not self.pedidos:
             nuevo_id = 1
         else:
-            nuevo_id = max(p['id_pedido'] for p in self.pedidos) + 1
+            nuevo_id = max(p["id_pedido"] for p in self.pedidos) + 1
 
         nuevo_pedido = {
-            'id_pedido': nuevo_id,
-            'id_cliente': id_cliente,
-            'nombre_cliente': self.clientes[id_cliente].nombre,
-            'fecha_pedido': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'items': items_pedido,
-            'total_pedido': round(costo_total, 2)
+            "id_pedido": nuevo_id,
+            "id_cliente": id_cliente,
+            "nombre_cliente": self.clientes[id_cliente].nombre,
+            "fecha_pedido": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "items": items_pedido,
+            "total_pedido": round(costo_total, 2),
         }
 
         self.pedidos.append(nuevo_pedido)
@@ -165,11 +204,13 @@ class Tienda:
     def historial_pedidos_cliente(self, id_cliente):
         if id_cliente not in self.clientes:
             return None
-        return [p for p in self.pedidos if p['id_cliente'] == id_cliente]
+        return [p for p in self.pedidos if p["id_cliente"] == id_cliente]
 
     def buscar_productos_por_nombre(self, termino):
-        return [p for p in self.productos.values() if termino.lower() in p.nombre.lower()]
+        return [
+            p for p in self.productos.values() if termino.lower() in p.nombre.lower()
+        ]
 
     def generar_reporte_ventas(self):
-        total_vendido = sum(pedido.get('total_pedido', 0) for pedido in self.pedidos)
+        total_vendido = sum(pedido.get("total_pedido", 0) for pedido in self.pedidos)
         return total_vendido
