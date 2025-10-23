@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/test/test_env.py">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/test/test_env.py" />
+              <option name="updatedContent" value="import pytest&#10;from pathlib import Path&#10;&#10;# ...existing code...&#10;&#10;def test_env_example_or_env_present(project_root):&#10;    env_example = project_root / &quot;.env.example&quot;&#10;    env = project_root / &quot;.env&quot;&#10;    if not env_example.exists() and not env.exists():&#10;        pytest.skip(&quot;No se encontró ni .env.example ni .env en la raíz; omitiendo verificación de variables de entorno.&quot;)&#10;    # Si existe .env.example, comprobar que contiene al menos una variable en formato KEY=VALUE&#10;    if env_example.exists():&#10;        content = env_example.read_text(encoding=&quot;utf-8&quot;)&#10;        assert &quot;=&quot; in content, &quot;.env.example existe pero no parece contener pares KEY=VALUE.&quot;&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/test/test_readme.py">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/test/test_readme.py" />
+              <option name="updatedContent" value="import pytest&#10;from pathlib import Path&#10;&#10;# ...existing code...&#10;&#10;def test_readme_exists_and_has_title(project_root):&#10;    readme = project_root / &quot;README.md&quot;&#10;    assert readme.exists(), &quot;README.md no encontrado en la raíz del proyecto.&quot;&#10;    content = readme.read_text(encoding=&quot;utf-8&quot;).lower()&#10;    assert &quot;gestión tienda&quot; in content or &quot;gestión_tienda&quot; in content or &quot;gestión&quot; in content, (&#10;        &quot;README.md encontrado pero no parece contener un título descriptivo ('Gestión Tienda').&quot;&#10;    )&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
