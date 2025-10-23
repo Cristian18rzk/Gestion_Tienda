@@ -1,6 +1,7 @@
 import pytest
 from gestion import Tienda, Producto, Cliente
 
+
 @pytest.fixture
 def tienda_vacia(monkeypatch):
     tienda = Tienda()
@@ -67,7 +68,7 @@ def test_eliminar_producto_inexistente(tienda_vacia):
 def test_crear_pedido_y_reporte(tienda_vacia):
     tienda_vacia.productos = {
         1: Producto(1, "Arroz", 12000, 15),
-        2: Producto(2, "Pan", 500, 15)
+        2: Producto(2, "Pan", 500, 15),
     }
     tienda_vacia.crear_pedido(1, {1: 2, 2: 3})
     assert len(tienda_vacia.pedidos) == 1
@@ -97,7 +98,7 @@ def test_generar_reporte_sin_pedidos(tienda_vacia):
 def test_buscar_producto_por_nombre(tienda_vacia):
     tienda_vacia.productos = {
         1: Producto(1, "Arroz", 12000, 15),
-        2: Producto(2, "Pan", 500, 15)
+        2: Producto(2, "Pan", 500, 15),
     }
     resultados = tienda_vacia.buscar_productos_por_nombre("pan")
     assert len(resultados) == 1
