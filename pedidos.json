@@ -37,5 +37,85 @@
             }
         ],
         "total_pedido": 53000.0
+    },
+    {
+        "id_pedido": 3,
+        "id_cliente": 1,
+        "nombre_cliente": "Cristian Rodriguez",
+        "fecha_pedido": "2025-10-22 17:31:42",
+        "items": [
+            {
+                "id_producto": 3,
+                "nombre": "Sal",
+                "cantidad": 4,
+                "precio_unitario": 2500.0,
+                "subtotal": 10000.0
+            }
+        ],
+        "total_pedido": 10000.0
+    },
+    {
+        "id_pedido": 4,
+        "id_cliente": 2,
+        "nombre_cliente": "Mariana Zapata",
+        "fecha_pedido": "2025-10-22 17:40:30",
+        "items": [
+            {
+                "id_producto": 6,
+                "nombre": "Chocolate",
+                "cantidad": 6,
+                "precio_unitario": 1000.0,
+                "subtotal": 6000.0
+            }
+        ],
+        "total_pedido": 6000.0
+    },
+    {
+        "id_pedido": 5,
+        "id_cliente": 1,
+        "nombre_cliente": "Cristian Rodriguez",
+        "fecha_pedido": "2025-10-22 17:41:05",
+        "items": [
+            {
+                "id_producto": 6,
+                "nombre": "Chocolate",
+                "cantidad": 3,
+                "precio_unitario": 1000.0,
+                "subtotal": 3000.0
+            }
+        ],
+        "total_pedido": 3000.0
+    },
+    {
+        "id_pedido": 6,
+        "id_cliente": 6,
+        "nombre_cliente": "Clara P\u00e9rez",
+        "fecha_pedido": "2025-10-22 20:33:42",
+        "items": [
+            {
+                "id_producto": 1,
+                "nombre": "Yogurt griego",
+                "cantidad": 4,
+                "precio_unitario": 4500.0,
+                "subtotal": 18000.0
+            }
+        ],
+        "total_pedido": 18000.0
+    },
+    {
+        "id_pedido": 7,
+        "id_cliente": 3,
+        "nombre_cliente": "Alejandro Zapata",
+        "fecha_pedido": "2025-10-23 00:55:25",
+        "items": [
+            {
+                "id_producto": 5,
+                "nombre": "Pan",
+                "cantidad": 3,
+                "precio_unitario": 500.0,
+                "subtotal": 1500.0
+            }
+        ],
+        "total_pedido": 1500.0
     }
 ]
