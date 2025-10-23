@@ -1,3 +1,4 @@
+import datetime
 from builtins import ValueError
 from time import sleep
 
@@ -12,6 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 from gestion import Tienda, Producto, Cliente
+from persistencia import PersistenciaJSON
 
 console = Console()
 tienda_app = Tienda()
@@ -70,13 +72,13 @@ def mostrar_menu():
     menu = Table.grid(padding=(0, 1))
     menu.add_column(justify="right", style="bold cyan", width=3)
     menu.add_column(style="white")
-    menu.add_row("1", "🧺 Gestión de Productos")
-    menu.add_row("2", "👥 Gestión de Clientes")
-    menu.add_row("3", "🧾 Crear nuevo pedido")
-    menu.add_row("4", "📜 Historial de pedidos")
-    menu.add_row("5", "🔍 Buscar productos por nombre")
-    menu.add_row("6", "📊 Generar reporte de ventas")
-    menu.add_row("0", "🚪 Salir del sistema")
+    menu.add_row("1", " Gestión de Productos")
+    menu.add_row("2", " Gestión de Clientes")
+    menu.add_row("3", " Crear nuevo pedido")
+    menu.add_row("4", " Historial de pedidos")
+    menu.add_row("5", " Buscar productos por nombre")
+    menu.add_row("6", " Generar reporte de ventas")
+    menu.add_row("0", " Salir del sistema")
     panel = Panel(
         Align.left(menu),
         title="[bold green]Menú Principal[/bold green]",
@@ -130,7 +132,7 @@ def manejar_crud_productos():
     while True:
         console.print(
             Panel.fit(
-                "⚙️  [bold bright_cyan]Gestión de Productos[/bold bright_cyan]",
+                "⚙  [bold bright_cyan]Gestión de Productos[/bold bright_cyan]",
                 border_style="cyan",
                 box=box.ROUNDED,
                 padding=(0, 1),
@@ -403,29 +405,54 @@ def manejar_crear_pedido():
         return
 
     # Confirmar pedido
-    console.print(f"\n[bold cyan]RESUMEN DEL PEDIDO:[/bold cyan]")
+    console.print("\n[bold cyan]RESUMEN DEL PEDIDO:[/bold cyan]")
     console.print(f"Cliente: {cliente.nombre} ({cliente.email})")
     console.print(f"Total: ${total_pedido:.2f}")
 
     confirmar = console.input("\n[bold white]¿Confirmar pedido? (s/n): [/bold white]").strip().lower()
 
     if confirmar == 's':
-        # Procesar pedido
+        # Procesar pedido: actualizar stock en objetos Producto
         for item in pedido_items:
             producto = item['producto']
             cantidad = item['cantidad']
             producto.stock -= cantidad
 
-        # Guardar el pedido (aquí deberías tener un método en Tienda para guardar pedidos)
+        # --- CAMBIO: construir pedido en formato persistible y guardarlo ---
         try:
-            # Si tu clase Tienda tiene método para guardar pedidos, úsalo aquí
-            # tienda_app.guardar_pedido(cliente, pedido_items, total_pedido)
-            tienda_app._guardar_productos()  # Guardar cambios en stock
+            # Convertir items a estructura serializable esperada por la persistencia
+            items_serializables = []
+            for item in pedido_items:
+                prod_obj = item['producto']
+                items_serializables.append({
+                    'id_producto': prod_obj.id_producto,
+                    'nombre': prod_obj.nombre,
+                    'cantidad': int(item['cantidad']),
+                    'precio_unitario': float(prod_obj.precio),
+                    'subtotal': round(float(item['subtotal']), 2)
+                })
+
+            # Generar nuevo id de pedido (igual lógica que en gestion.py)
+            nuevo_id = tienda_app.obtener_siguiente_id({p['id_pedido']: p for p in tienda_app.pedidos}) \
+                if tienda_app.pedidos else 1
+
+            nuevo_pedido = {
+                'id_pedido': nuevo_id,
+                'id_cliente': id_cliente,
+                'nombre_cliente': cliente.nombre,
+                'fecha_pedido': __import__('datetime').datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'items': items_serializables,
+                'total_pedido': round(total_pedido, 2)
+            }
+
+            tienda_app.pedidos.append(nuevo_pedido)                # agregar al listado en memoria
+            tienda_app._guardar_productos()                        # guardar cambios de stock
+            tienda_app._guardar_pedidos()                          # --- CAMBIO: guardar pedidos persistente
+
+            console.print("[bold green]✔ Pedido creado exitosamente![/bold green]")
+            console.print(f"[bold green]Total: ${total_pedido:.2f}[/bold green]")
         except Exception as e:
             console.print(f"[bold yellow]⚠ No se pudo guardar en persistencia: {e}[/bold yellow]")
-
-        console.print("[bold green]✔ Pedido creado exitosamente![/bold green]")
-        console.print(f"[bold green]Total: ${total_pedido:.2f}[/bold green]")
     else:
         console.print("[bold yellow]⚠ Pedido cancelado.[/bold yellow]")
 
@@ -443,36 +470,37 @@ def mostrar_historial_pedidos():
         )
     )
 
-    # En una implementación real, aquí cargarías los pedidos desde tu almacenamiento
-    # Por ahora mostramos un mensaje informativo
+    pedidos = tienda_app.pedidos
+    if not pedidos:
+        console.print("[bold yellow]⚠ No hay pedidos registrados.[/bold yellow]")
+        pausa()
+        return
 
-    console.print("[bold yellow]ℹ Esta funcionalidad mostrará el historial completo de pedidos.[/bold yellow]")
-    console.print("[dim]Incluirá: fecha, cliente, productos, cantidades y totales.[/dim]")
-
-    # Ejemplo de cómo se vería la tabla (datos de ejemplo)
-    tabla_ejemplo = Table(
-        title="[bold cyan]EJEMPLO - Historial de Pedidos[/bold cyan]",
+    tabla = Table(
+        title="[bold cyan]Historial de Pedidos[/bold cyan]",
         show_header=True,
-        header_style="bold green"
+        header_style="bold green",
+        box=box.SIMPLE,
+        style="white"
     )
-    tabla_ejemplo.add_column("ID", style="cyan", width=8)
-    tabla_ejemplo.add_column("Fecha", style="white", width=12)
-    tabla_ejemplo.add_column("Cliente", style="white")
-    tabla_ejemplo.add_column("Productos", style="white")
-    tabla_ejemplo.add_column("Total", justify="right", style="yellow", width=10)
+    tabla.add_column("ID", style="cyan", width=6, justify="center")
+    tabla.add_column("Fecha", style="white", width=19, justify="center")
+    tabla.add_column("Cliente", style="white")
+    tabla.add_column("Productos", style="white")
+    tabla.add_column("Total", style="yellow", justify="right", width=12)
 
-    tabla_ejemplo.add_row("1001", "2024-01-15", "Juan Pérez", "Laptop (1), Mouse (2)", "$1,250.00")
-    tabla_ejemplo.add_row("1002", "2024-01-16", "María García", "Teclado (1)", "$75.50")
-    tabla_ejemplo.add_row("1003", "2024-01-17", "Carlos López", "Monitor (1), Cable HDMI (1)", "$350.00")
+    for pedido in pedidos:
+        productos = ", ".join(f"{it.get('nombre')} ({it.get('cantidad')})" for it in pedido.get('items', []))
+        tabla.add_row(
+            str(pedido.get('id_pedido')),
+            pedido.get('fecha_pedido', ''),
+            pedido.get('nombre_cliente', ''),
+            productos,
+            f"$ {pedido.get('total_pedido', 0):.2f}"
+        )
 
     console.print("\n")
-    console.print(tabla_ejemplo)
-
-    console.print("\n[bold green]Para implementar completamente, necesitarías:[/bold green]")
-    console.print("[dim]- Clase Pedido en gestion.py[/dim]")
-    console.print("[dim]- Métodos para guardar/cargar pedidos[/dim]")
-    console.print("[dim]- Almacenamiento persistente de pedidos[/dim]")
-
+    console.print(tabla)
     pausa()
 
 
@@ -530,75 +558,158 @@ def manejar_generar_reporte():
         )
     )
 
-    # Estadísticas básicas de productos
-    productos = tienda_app.obtener_lista(tienda_app.productos)
-    clientes = tienda_app.obtener_lista(tienda_app.clientes)
+    # cargamos pedidos actuales desde tienda_app (ya inicializado)
+    pedidos = tienda_app.pedidos
 
-    if not productos:
-        console.print("[bold red]✗ No hay productos registrados.[/bold red]")
+    # Submenu de opciones
+    while True:
+        menu_tabla = Table.grid(padding=(0, 1))
+        menu_tabla.add_column(justify="center", width=3)
+        menu_tabla.add_column()
+        menu_tabla.add_row("1", "[bold]Ver resumen general[/bold]")
+        menu_tabla.add_row("2", "[bold]Filtrar por fecha[/bold] (rango)")
+        menu_tabla.add_row("3", "[bold]Estadísticas históricas[/bold] (por mes / top productos)")
+        menu_tabla.add_row("4", "[bold]Exportar a Excel (.xlsx)[/bold]")
+        menu_tabla.add_row("5", "[bold]Exportar a PDF[/bold]")
+        menu_tabla.add_row("0", "[bold]Volver[/bold]")
+        console.print(Panel(Align.left(menu_tabla), title="[bold cyan]Opciones de Reporte[/bold cyan]", box=box.ROUNDED, border_style="bright_green"))
+
+        opcion = console.input("\n[bold cyan]>>> Seleccione una opción: [/bold cyan]").strip()
+        if opcion == "0":
+            break
+
+        # --- resumen general ---
+        if opcion == "1":
+            if not pedidos:
+                console.print("[bold yellow]⚠ No hay pedidos registrados.[/bold yellow]")
+                pausa()
+                continue
+
+            total_vendido = sum(p.get("total_pedido", 0) for p in pedidos)
+            total_pedidos = len(pedidos)
+            clientes_unicos = len(set(p.get("id_cliente") for p in pedidos))
+            # tabla resumen
+            tabla_resumen = Table(show_header=True, header_style="bold green", box=box.SIMPLE)
+            tabla_resumen.add_column("Métrica", style="cyan")
+            tabla_resumen.add_column("Valor", style="white", justify="right")
+            tabla_resumen.add_row("Pedidos Totales", str(total_pedidos))
+            tabla_resumen.add_row("Clientes distintos", str(clientes_unicos))
+            tabla_resumen.add_row("Total vendido", f"$ {total_vendido:.2f}")
+            console.print(tabla_resumen)
+            pausa()
+            continue
+
+        # --- filtrar por fecha ---
+        if opcion == "2":
+            desde = console.input("Fecha desde (YYYY-MM-DD, vacío = sin límite): ").strip()
+            hasta = console.input("Fecha hasta  (YYYY-MM-DD, vacío = sin límite): ").strip()
+            desde_val = desde if desde else None
+            hasta_val = hasta if hasta else None
+            pedidos_filtrados = PersistenciaJSON.filtrar_pedidos_por_fecha(pedidos, desde=desde_val, hasta=hasta_val)
+            if not pedidos_filtrados:
+                console.print("[bold yellow]⚠ No se encontraron pedidos en ese rango.[/bold yellow]")
+                pausa()
+                continue
+            # Mostrar tabla compacta de pedidos filtrados
+            tabla = Table(title="[bold cyan]Pedidos (filtrados)[/bold cyan]", show_header=True, header_style="bold green", box=box.SIMPLE)
+            tabla.add_column("ID", style="cyan", width=6, justify="center")
+            tabla.add_column("Fecha", style="white", width=19, justify="center")
+            tabla.add_column("Cliente", style="white")
+            tabla.add_column("Total", style="yellow", justify="right", width=12)
+            for p in pedidos_filtrados:
+                tabla.add_row(str(p.get("id_pedido")), p.get("fecha_pedido",""), p.get("nombre_cliente",""), f"$ {p.get('total_pedido',0):.2f}")
+            console.print(tabla)
+            pausa()
+            continue
+
+        # --- estadísticas históricas (por mes, top productos) ---
+        if opcion == "3":
+            if not pedidos:
+                console.print("[bold yellow]⚠ No hay pedidos para generar estadísticas.[/bold yellow]")
+                pausa()
+                continue
+
+            # ventas por mes
+            from collections import defaultdict, Counter
+            ventas_por_mes = defaultdict(float)
+            productos_counter = Counter()
+            ventas_por_cliente = defaultdict(float)
+
+            for p in pedidos:
+                fecha = p.get("fecha_pedido", "")
+                try:
+                    dt = datetime.strptime(fecha, "%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    try:
+                        dt = datetime.strptime(fecha, "%Y-%m-%d")
+                    except Exception:
+                        continue
+                key_mes = f"{dt.year}-{dt.month:02d}"
+                ventas_por_mes[key_mes] += float(p.get("total_pedido", 0))
+                ventas_por_cliente[p.get("nombre_cliente", "Desconocido")] += float(p.get("total_pedido", 0))
+                for it in p.get("items", []):
+                    productos_counter.update({it.get("nombre", "SinNombre"): int(it.get("cantidad", 0))})
+
+            # Mostrar ventas por mes en tabla compacta
+            tabla_mes = Table(title="[bold cyan]Ventas por Mes[/bold cyan]", show_header=True, header_style="bold green", box=box.SIMPLE)
+            tabla_mes.add_column("Mes", style="cyan")
+            tabla_mes.add_column("Ventas", style="yellow", justify="right")
+            for mes, monto in sorted(ventas_por_mes.items()):
+                tabla_mes.add_row(mes, f"$ {monto:.2f}")
+            console.print(tabla_mes)
+
+            # Top productos vendidos (por unidades)
+            tabla_top = Table(title="[bold cyan]Top Productos (unidades vendidas)[/bold cyan]", show_header=True, header_style="bold green", box=box.SIMPLE)
+            tabla_top.add_column("Producto", style="white")
+            tabla_top.add_column("Unidades", style="yellow", justify="right")
+            for prod, cnt in productos_counter.most_common(10):
+                tabla_top.add_row(prod, str(cnt))
+            console.print(tabla_top)
+
+            # Top clientes por monto
+            tabla_clientes = Table(title="[bold cyan]Top Clientes (por monto)[/bold cyan]", show_header=True, header_style="bold green", box=box.SIMPLE)
+            tabla_clientes.add_column("Cliente", style="white")
+            tabla_clientes.add_column("Total Comprado", style="yellow", justify="right")
+            for cliente, monto in sorted(ventas_por_cliente.items(), key=lambda x: x[1], reverse=True)[:10]:
+                tabla_clientes.add_row(cliente, f"$ {monto:.2f}")
+            console.print(tabla_clientes)
+
+            pausa()
+            continue
+
+        # --- exportar Excel ---
+        if opcion == "4":
+            if not pedidos:
+                console.print("[bold yellow]⚠ No hay pedidos para exportar.[/bold yellow]")
+                pausa()
+                continue
+            archivo = console.input("Nombre archivo destino (ej: reporte_pedidos.xlsx): ").strip() or "reporte_pedidos.xlsx"
+            try:
+                PersistenciaJSON.exportar_pedidos_excel(archivo, pedidos)
+                console.print(f"[bold green]✔ Exportado a Excel: {archivo}[/bold green]")
+            except Exception as e:
+                console.print(f"[bold red]✗ Error exportando a Excel:[/bold red] {e}")
+            pausa()
+            continue
+
+        # --- exportar PDF ---
+        if opcion == "5":
+            if not pedidos:
+                console.print("[bold yellow]⚠ No hay pedidos para exportar.[/bold yellow]")
+                pausa()
+                continue
+            archivo = console.input("Nombre archivo destino (ej: reporte_pedidos.pdf): ").strip() or "reporte_pedidos.pdf"
+            try:
+                PersistenciaJSON.exportar_pedidos_pdf(archivo, pedidos, titulo="Reporte de Pedidos")
+                console.print(f"[bold green]✔ Exportado a PDF: {archivo}[/bold green]")
+            except Exception as e:
+                console.print(f"[bold red]✗ Error exportando a PDF:[/bold red] {e}")
+            pausa()
+            continue
+
+        console.print("[bold red]✗ Opción no válida. Intente de nuevo.[/bold red]")
         pausa()
-        return
 
-    # Calcular estadísticas
-    total_productos = len(productos)
-    total_stock = sum(p.stock for p in productos)
-    valor_inventario = sum(p.precio * p.stock for p in productos)
-    producto_mas_caro = max(productos, key=lambda x: x.precio) if productos else None
-    producto_menos_stock = min(productos, key=lambda x: x.stock) if productos else None
-
-    # Mostrar reporte
-    console.print(Rule("[bold cyan]REPORTE DE VENTAS - RESUMEN[/bold cyan]", style="cyan"))
-
-    # Tabla de resumen
-    tabla_resumen = Table(
-        show_header=True,
-        header_style="bold green",
-        box=box.ROUNDED
-    )
-    tabla_resumen.add_column("Métrica", style="cyan")
-    tabla_resumen.add_column("Valor", style="white", justify="right")
-
-    tabla_resumen.add_row("Total de Productos", str(total_productos))
-    tabla_resumen.add_row("Total de Clientes", str(len(clientes)))
-    tabla_resumen.add_row("Stock Total", str(total_stock))
-    tabla_resumen.add_row("Valor del Inventario", f"$ {valor_inventario:.2f}")
-
-    if producto_mas_caro:
-        tabla_resumen.add_row("Producto Más Caro", f"{producto_mas_caro.nombre} ($ {producto_mas_caro.precio:.2f})")
-    if producto_menos_stock and producto_menos_stock.stock < 5:
-        tabla_resumen.add_row("⚠ Producto con Bajo Stock",
-                              f"{producto_menos_stock.nombre} ({producto_menos_stock.stock} unidades)")
-
-    console.print(tabla_resumen)
-
-    # Productos por nivel de stock
-    console.print("\n[bold cyan]ANÁLISIS DE STOCK:[/bold cyan]")
-
-    productos_sin_stock = [p for p in productos if p.stock == 0]
-    productos_bajo_stock = [p for p in productos if 0 < p.stock <= 5]
-    productos_stock_normal = [p for p in productos if p.stock > 5]
-
-    if productos_sin_stock:
-        console.print(f"[bold red]❌ Sin stock: {len(productos_sin_stock)} productos[/bold red]")
-        for p in productos_sin_stock:
-            console.print(f"  - {p.nombre} (ID: {p.id_producto})")
-
-    if productos_bajo_stock:
-        console.print(f"[bold yellow]⚠ Bajo stock: {len(productos_bajo_stock)} productos[/bold yellow]")
-        for p in productos_bajo_stock:
-            console.print(f"  - {p.nombre} (ID: {p.id_producto}) - Stock: {p.stock}")
-
-    if productos_stock_normal:
-        console.print(f"[bold green]✅ Stock normal: {len(productos_stock_normal)} productos[/bold green]")
-
-    # Opción para exportar (conceptual)
-    console.print("\n[bold cyan]OPCIONES ADICIONALES:[/bold cyan]")
-    console.print("[dim]En una implementación completa, podrías:[/dim]")
-    console.print("[dim]- Exportar a PDF/Excel[/dim]")
-    console.print("[dim]- Filtrar por fecha[/dim]")
-    console.print("[dim]- Ver estadísticas de ventas históricas[/dim]")
-
-    pausa()
 
 
 # ---------------------- MAIN LOOP ----------------------
