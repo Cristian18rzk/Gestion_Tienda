@@ -20,32 +20,54 @@ tienda_app = Tienda()
 
 
 def leer_int(prompt: str, permitir_vacio: bool = False):
+    """Lee un número entero desde la consola.
+
+    Args:
+        prompt (str): Mensaje que se mostrará al usuario para solicitar el valor.
+        permitir_vacio (bool, opcional): Si es True, permite que el usuario deje el campo vacío.
+            Por defecto es False.
+
+    Returns:
+        int | None: Devuelve el número entero ingresado o None si se permite vacío.
+    """
     raw = console.input(prompt)
     if permitir_vacio and raw.strip() == "":
         return None
     try:
         return int(raw)
     except (ValueError, TypeError):
-        console.print("[bold red]✗ Entrada inválida. Se esperaba un número entero.[/bold red]")
+        console.print("[bold red Entrada inválida. Se esperaba un número entero.[/bold red]")
         return None
 
 
 def leer_float(prompt: str, permitir_vacio: bool = False):
+    """Lee un número decimal desde la consola.
+
+    Args:
+        prompt (str): Mensaje que se mostrará al usuario para solicitar el valor.
+        permitir_vacio (bool, opcional): Si es True, permite que el usuario deje el campo vacío.
+            Por defecto es False.
+
+    Returns:
+        float | None: Devuelve el número decimal ingresado o None si se permite vacío.
+    """
     raw = console.input(prompt)
     if permitir_vacio and raw.strip() == "":
         return None
     try:
         return float(raw)
     except (ValueError, TypeError):
-        console.print("[bold red]✗ Entrada inválida. Se esperaba un número decimal.[/bold red]")
+        console.print("[bold red] Entrada inválida. Se esperaba un número decimal.[/bold red]")
         return None
 
 
 def pausa():
+    """Pausa la ejecución hasta que el usuario presione ENTER."""
     console.input("\n[dim]Presione ENTER para continuar...[/dim]")
 
 
 def imprimir_encabezado():
+    """Imprime el encabezado principal de la aplicación en consola."""
     console.clear()
     logo_texto = """[bold green]
  ████████╗██╗██╗██████╗ ███╗   ██╗██████╗  █████╗ 
@@ -68,17 +90,18 @@ def imprimir_encabezado():
 
 
 def mostrar_menu():
+    """Muestra el menú principal de la aplicación."""
     imprimir_encabezado()
     menu = Table.grid(padding=(0, 1))
     menu.add_column(justify="right", style="bold cyan", width=3)
     menu.add_column(style="white")
-    menu.add_row("1", " Gestión de Productos")
-    menu.add_row("2", " Gestión de Clientes")
-    menu.add_row("3", " Crear nuevo pedido")
-    menu.add_row("4", " Historial de pedidos")
-    menu.add_row("5", " Buscar productos por nombre")
-    menu.add_row("6", " Generar reporte de ventas")
-    menu.add_row("0", " Salir del sistema")
+    menu.add_row("1", "Gestión de Productos")
+    menu.add_row("2", "Gestión de Clientes")
+    menu.add_row("3", "Crear nuevo pedido")
+    menu.add_row("4", "Historial de pedidos")
+    menu.add_row("5", "Buscar productos por nombre")
+    menu.add_row("6", "Generar reporte de ventas")
+    menu.add_row("0", "Salir del sistema")
     panel = Panel(
         Align.left(menu),
         title="[bold green]Menú Principal[/bold green]",
@@ -92,9 +115,16 @@ def mostrar_menu():
 
 
 def mostrar_lista(titulo: str, lista_objetos: list):
+    """Muestra una lista de objetos en formato tabular en la consola.
+
+    Args:
+        titulo (str): Título de la tabla a mostrar.
+        lista_objetos (list): Lista de objetos a representar.
+    """
     if not lista_objetos:
-        console.print(f"[bold yellow]⚠ No hay {titulo.lower()} registrados.[/bold yellow]")
+        console.print(f"[bold yellow No hay {titulo.lower()} registrados.[/bold yellow]")
         return
+
     tabla = Table(
         title=f"[bold cyan]{titulo}[/bold cyan]",
         show_header=True,
@@ -129,6 +159,11 @@ def mostrar_lista(titulo: str, lista_objetos: list):
 
 # ---------------------- MANEJO CRUD PRODUCTOS ----------------------
 def manejar_crud_productos():
+    """Gestiona las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) de productos.
+
+    Args:
+        tienda (Tienda): Objeto de la clase Tienda que contiene los productos registrados.
+    """
     while True:
         console.print(
             Panel.fit(
@@ -156,11 +191,11 @@ def manejar_crud_productos():
         console.print(Panel(Align.left(tabla_menu), border_style="bright_cyan", box=box.ROUNDED, padding=(0, 1)),
                       justify="left")
 
-        opcion = console.input("\n[bold cyan]>>> Seleccione una opción: [/bold cyan]").strip()
+        opcion = console.input("\n[bold cyan]>>>>> Seleccione una opción: [/bold cyan]").strip()
         if opcion == '1':
             nombre = console.input("[bold white]Nombre:[/bold white] ").strip()
             if not nombre:
-                console.print("[bold red]✗ El nombre no puede quedar vacío.[/bold red]")
+                console.print("[bold red] El nombre no puede quedar vacío.[/bold red]")
                 pausa()
                 continue
             precio = None
@@ -170,7 +205,7 @@ def manejar_crud_productos():
             while stock is None:
                 stock = leer_int("[bold white]Stock:[/bold white] ")
             tienda_app.agregar_producto(nombre, precio, stock)
-            console.print("[bold green]✔ Producto creado correctamente.[/bold green]")
+            console.print("[bold green] Producto creado correctamente.[/bold green]")
             pausa()
         elif opcion == '2':
             console.print(Rule("[bold cyan]LISTA DE PRODUCTOS[/bold cyan]", style="cyan"))
@@ -185,7 +220,7 @@ def manejar_crud_productos():
             precio = leer_float("Nuevo Precio (vacío = no cambiar): ", permitir_vacio=True)
             stock = leer_int("Nuevo Stock (vacío = no cambiar): ", permitir_vacio=True)
             tienda_app.actualizar_producto(id_prod, nombre or None, precio, stock)
-            console.print("[bold green]✔ Producto actualizado correctamente.[/bold green]")
+            console.print("[bold green] Producto actualizado correctamente.[/bold green]")
             pausa()
         elif opcion == '4':
             id_prod = leer_int("[bold white]ID del producto a eliminar:[/bold white] ")
@@ -194,9 +229,9 @@ def manejar_crud_productos():
                 continue
             try:
                 tienda_app.eliminar_producto(id_prod)
-                console.print("[bold green]✔ Producto eliminado correctamente.[/bold green]")
+                console.print("[bold green] Producto eliminado correctamente.[/bold green]")
             except Exception as e:
-                console.print(f"[bold red]✗ Error al eliminar:[/bold red] {e}")
+                console.print(f"[bold red] Error al eliminar:[/bold red] {e}")
             pausa()
         elif opcion == '0':
             console.print(
@@ -204,12 +239,17 @@ def manejar_crud_productos():
                       padding=(0, 1)))
             break
         else:
-            console.print("[bold red]✗ Opción no válida. Intente de nuevo.[/bold red]")
+            console.print("[bold red] Opción no válida. Intente de nuevo.[/bold red]")
             pausa()
 
 
-# ---------------------- MANEJO CRUD CLIENTES ----------------------
+#  MANEJO CRUD CLIENTES
 def manejar_crud_clientes():
+    """Gestiona las operaciones CRUD de clientes.
+
+        Args:
+           (Tienda): Objeto de la clase Tienda que contiene los clientes registrados.
+        """
     while True:
         console.print(
             Panel.fit(
@@ -241,12 +281,12 @@ def manejar_crud_clientes():
         if opcion == '1':
             nombre = console.input("[bold white]Nombre completo:[/bold white] ").strip()
             if not nombre:
-                console.print("[bold red]✗ El nombre no puede quedar vacío.[/bold red]")
+                console.print("[bold red] El nombre no puede quedar vacío.[/bold red]")
                 pausa()
                 continue
             email = console.input("[bold white]Email:[/bold white] ").strip()
             if not email:
-                console.print("[bold red]✗ El email no puede quedar vacío.[/bold red]")
+                console.print("[bold red] El email no puede quedar vacío.[/bold red]")
                 pausa()
                 continue
             nuevo_id = tienda_app.obtener_siguiente_id(tienda_app.clientes)
@@ -256,8 +296,8 @@ def manejar_crud_clientes():
                 tienda_app._guardar_clientes()
             except Exception:
                 console.print(
-                    "[bold yellow]⚠ No se pudo guardar en persistencia. Cliente creado en memoria.[/bold yellow]")
-            console.print(f"[bold green]✔ Cliente creado con ID {nuevo_id}.[/bold green]")
+                    "[bold yellow] No se pudo guardar en persistencia. Cliente creado en memoria.[/bold yellow]")
+            console.print(f"[bold green] Cliente creado con ID {nuevo_id}.[/bold green]")
             pausa()
         elif opcion == '2':
             console.print(Rule("[bold cyan]LISTA DE CLIENTES[/bold cyan]", style="cyan"))
@@ -270,7 +310,7 @@ def manejar_crud_clientes():
                 continue
             cliente = tienda_app.clientes.get(id_cli)
             if not cliente:
-                console.print(f"[bold red]✗ Cliente ID {id_cli} no encontrado.[/bold red]")
+                console.print(f"[bold red] Cliente ID {id_cli} no encontrado.[/bold red]")
                 pausa()
                 continue
             nombre = console.input("Nuevo Nombre (vacío = no cambiar): ").strip()
@@ -283,8 +323,8 @@ def manejar_crud_clientes():
                 tienda_app._guardar_clientes()
             except Exception:
                 console.print(
-                    "[bold yellow]⚠ No se pudo guardar en persistencia. Cambios aplicados en memoria.[/bold yellow]")
-            console.print("[bold green]✔ Cliente actualizado correctamente.[/bold green]")
+                    "[bold yellow] No se pudo guardar en persistencia. Cambios aplicados en memoria.[/bold yellow]")
+            console.print("[bold green] Cliente actualizado correctamente.[/bold green]")
             pausa()
         elif opcion == '4':
             id_cli = leer_int("[bold white]ID del cliente a eliminar:[/bold white] ")
@@ -297,10 +337,10 @@ def manejar_crud_clientes():
                     tienda_app._guardar_clientes()
                 except Exception:
                     console.print(
-                        "[bold yellow]⚠ No se pudo guardar en persistencia. Eliminado en memoria.[/bold yellow]")
-                console.print("[bold green]✔ Cliente eliminado correctamente.[/bold green]")
+                        "[bold yellow] No se pudo guardar en persistencia. Eliminado en memoria.[/bold yellow]")
+                console.print("[bold green] Cliente eliminado correctamente.[/bold green]")
             else:
-                console.print(f"[bold red]✗ Cliente ID {id_cli} no encontrado.[/bold red]")
+                console.print(f"[bold red] Cliente ID {id_cli} no encontrado.[/bold red]")
             pausa()
         elif opcion == '0':
             console.print(
@@ -308,15 +348,20 @@ def manejar_crud_clientes():
                       padding=(0, 1)))
             break
         else:
-            console.print("[bold red]✗ Opción no válida. Intente de nuevo.[/bold red]")
+            console.print("[bold red] Opción no válida. Intente de nuevo.[/bold red]")
             pausa()
 
 
 # ---------------------- CREAR NUEVO PEDIDO ----------------------
 def manejar_crear_pedido():
+    """Permite crear nuevos pedidos de productos por parte de los clientes.
+
+    Args:
+        tienda (Tienda): Objeto de la clase Tienda que gestiona los productos y clientes.
+    """
     console.print(
         Panel.fit(
-            "🧾  [bold bright_cyan]Crear Nuevo Pedido[/bold bright_cyan]",
+            " [bold bright_cyan]Crear Nuevo Pedido[/bold bright_cyan]",
             border_style="cyan",
             box=box.ROUNDED,
             padding=(0, 1),
@@ -326,7 +371,7 @@ def manejar_crear_pedido():
     # Mostrar clientes disponibles
     clientes = tienda_app.obtener_lista(tienda_app.clientes)
     if not clientes:
-        console.print("[bold red]✗ No hay clientes registrados. Debe crear al menos un cliente primero.[/bold red]")
+        console.print("[bold red] No hay clientes registrados. Debe crear al menos un cliente primero.[/bold red]")
         pausa()
         return
 
@@ -341,14 +386,14 @@ def manejar_crear_pedido():
 
     cliente = tienda_app.clientes.get(id_cliente)
     if not cliente:
-        console.print(f"[bold red]✗ Cliente ID {id_cliente} no encontrado.[/bold red]")
+        console.print(f"[bold red] Cliente ID {id_cliente} no encontrado.[/bold red]")
         pausa()
         return
 
     # Mostrar productos disponibles
     productos = tienda_app.obtener_lista(tienda_app.productos)
     if not productos:
-        console.print("[bold red]✗ No hay productos registrados. Debe crear al menos un producto primero.[/bold red]")
+        console.print("[bold red] No hay productos registrados. Debe crear al menos un producto primero.[/bold red]")
         pausa()
         return
 
@@ -371,20 +416,20 @@ def manejar_crear_pedido():
 
         producto = tienda_app.productos.get(id_producto)
         if not producto:
-            console.print(f"[bold red]✗ Producto ID {id_producto} no encontrado.[/bold red]")
+            console.print(f"[bold red] Producto ID {id_producto} no encontrado.[/bold red]")
             continue
 
         if producto.stock <= 0:
-            console.print(f"[bold red]✗ Producto '{producto.nombre}' sin stock disponible.[/bold red]")
+            console.print(f"[bold red] Producto '{producto.nombre}' sin stock disponible.[/bold red]")
             continue
 
         cantidad = leer_int(f"[bold white]Cantidad de '{producto.nombre}' (stock: {producto.stock}):[/bold white] ")
         if cantidad is None or cantidad <= 0:
-            console.print("[bold red]✗ Cantidad inválida.[/bold red]")
+            console.print("[bold red] Cantidad inválida.[/bold red]")
             continue
 
         if cantidad > producto.stock:
-            console.print(f"[bold red]✗ Stock insuficiente. Solo hay {producto.stock} unidades.[/bold red]")
+            console.print(f"[bold red] Stock insuficiente. Solo hay {producto.stock} unidades.[/bold red]")
             continue
 
         # Agregar al pedido
@@ -396,11 +441,11 @@ def manejar_crear_pedido():
         })
         total_pedido += subtotal
 
-        console.print(f"[bold green]✔ Agregado: {cantidad} x {producto.nombre} = ${subtotal:.2f}[/bold green]")
+        console.print(f"[bold green] Agregado: {cantidad} x {producto.nombre} = ${subtotal:.2f}[/bold green]")
         console.print(f"[bold yellow]Total acumulado: ${total_pedido:.2f}[/bold yellow]")
 
     if not pedido_items:
-        console.print("[bold yellow]⚠ Pedido cancelado. No se agregaron productos.[/bold yellow]")
+        console.print("[bold yellow] Pedido cancelado. No se agregaron productos.[/bold yellow]")
         pausa()
         return
 
@@ -449,21 +494,27 @@ def manejar_crear_pedido():
             tienda_app._guardar_productos()                        # guardar cambios de stock
             tienda_app._guardar_pedidos()                          # --- CAMBIO: guardar pedidos persistente
 
-            console.print("[bold green]✔ Pedido creado exitosamente![/bold green]")
+            console.print("[bold green] Pedido creado exitosamente![/bold green]")
             console.print(f"[bold green]Total: ${total_pedido:.2f}[/bold green]")
         except Exception as e:
-            console.print(f"[bold yellow]⚠ No se pudo guardar en persistencia: {e}[/bold yellow]")
+            console.print(f"[bold yellow] No se pudo guardar en persistencia: {e}[/bold yellow]")
     else:
-        console.print("[bold yellow]⚠ Pedido cancelado.[/bold yellow]")
+        console.print("[bold yellow] Pedido cancelado.[/bold yellow]")
 
     pausa()
 
 
 # ---------------------- HISTORIAL DE PEDIDOS ----------------------
 def mostrar_historial_pedidos():
+    """Muestra el historial de todos los pedidos registrados en la tienda.
+
+    Args:
+         (Tienda):Contiene los pedidos realizados.
+    """
+
     console.print(
         Panel.fit(
-            "📜  [bold bright_cyan]Historial de Pedidos[/bold bright_cyan]",
+            "  [bold bright_cyan]Historial de Pedidos[/bold bright_cyan]",
             border_style="cyan",
             box=box.ROUNDED,
             padding=(0, 1),
@@ -472,7 +523,7 @@ def mostrar_historial_pedidos():
 
     pedidos = tienda_app.pedidos
     if not pedidos:
-        console.print("[bold yellow]⚠ No hay pedidos registrados.[/bold yellow]")
+        console.print("[bold yellow] No hay pedidos registrados.[/bold yellow]")
         pausa()
         return
 
@@ -506,9 +557,15 @@ def mostrar_historial_pedidos():
 
 # ---------------------- BUSCAR PRODUCTOS POR NOMBRE ----------------------
 def manejar_buscar_productos():
+    """Permite buscar productos por su nombre dentro de la tienda.
+
+    Args:
+        (Tienda): contiene los productos agregados.
+    """
+
     console.print(
         Panel.fit(
-            "🔍  [bold bright_cyan]Buscar Productos por Nombre[/bold bright_cyan]",
+            "  [bold bright_cyan]Buscar Productos por Nombre[/bold bright_cyan]",
             border_style="cyan",
             box=box.ROUNDED,
             padding=(0, 1),
@@ -518,7 +575,7 @@ def manejar_buscar_productos():
     termino = console.input("[bold white]Ingrese el nombre o parte del nombre a buscar: [/bold white]").strip()
 
     if not termino:
-        console.print("[bold red]✗ Debe ingresar un término de búsqueda.[/bold red]")
+        console.print("[bold red] Debe ingresar un término de búsqueda.[/bold red]")
         pausa()
         return
 
@@ -530,10 +587,12 @@ def manejar_buscar_productos():
             productos_encontrados.append(producto)
 
     if productos_encontrados:
-        console.print(f"\n[bold green]✔ Se encontraron {len(productos_encontrados)} producto(s):[/bold green]")
+        console.print(f"\n[bold green] Se encontraron {len(productos_encontrados)} producto(s):[/bold green]")
         mostrar_lista(f"Productos que contienen '{termino}'", productos_encontrados)
     else:
-        console.print(f"\n[bold yellow]⚠ No se encontraron productos que contengan '{termino}'.[/bold yellow]")
+        console.print(
+            f"\n[bold yellow] No se encontraron productos que contengan '{termino}'.[/bold yellow]"
+        )
         # Mostrar sugerencias
         sugerencias = []
         for producto in productos:
@@ -549,9 +608,14 @@ def manejar_buscar_productos():
 
 # ---------------------- GENERAR REPORTE DE VENTAS ----------------------
 def manejar_generar_reporte():
+    """Genera un reporte detallado de las ventas realizadas.
+
+      Args:
+          (Tienda): Genera los datos de los pedidos registrados.
+      """
     console.print(
         Panel.fit(
-            "📊  [bold bright_cyan]Generar Reporte de Ventas[/bold bright_cyan]",
+            " [bold bright_cyan]Generar Reporte de Ventas[/bold bright_cyan]",
             border_style="cyan",
             box=box.ROUNDED,
             padding=(0, 1),
@@ -581,7 +645,7 @@ def manejar_generar_reporte():
         # --- resumen general ---
         if opcion == "1":
             if not pedidos:
-                console.print("[bold yellow]⚠ No hay pedidos registrados.[/bold yellow]")
+                console.print("[bold yellow] No hay pedidos registrados.[/bold yellow]")
                 pausa()
                 continue
 
@@ -607,7 +671,7 @@ def manejar_generar_reporte():
             hasta_val = hasta if hasta else None
             pedidos_filtrados = PersistenciaJSON.filtrar_pedidos_por_fecha(pedidos, desde=desde_val, hasta=hasta_val)
             if not pedidos_filtrados:
-                console.print("[bold yellow]⚠ No se encontraron pedidos en ese rango.[/bold yellow]")
+                console.print("[bold yellow] No se encontraron pedidos en ese rango.[/bold yellow]")
                 pausa()
                 continue
             # Mostrar tabla compacta de pedidos filtrados
@@ -625,7 +689,7 @@ def manejar_generar_reporte():
         # --- estadísticas históricas (por mes, top productos) ---
         if opcion == "3":
             if not pedidos:
-                console.print("[bold yellow]⚠ No hay pedidos para generar estadísticas.[/bold yellow]")
+                console.print("[bold yellow] No hay pedidos para generar estadísticas.[/bold yellow]")
                 pausa()
                 continue
 
@@ -680,34 +744,34 @@ def manejar_generar_reporte():
         # --- exportar Excel ---
         if opcion == "4":
             if not pedidos:
-                console.print("[bold yellow]⚠ No hay pedidos para exportar.[/bold yellow]")
+                console.print("[bold yellow] No hay pedidos para exportar.[/bold yellow]")
                 pausa()
                 continue
             archivo = console.input("Nombre archivo destino (ej: reporte_pedidos.xlsx): ").strip() or "reporte_pedidos.xlsx"
             try:
                 PersistenciaJSON.exportar_pedidos_excel(archivo, pedidos)
-                console.print(f"[bold green]✔ Exportado a Excel: {archivo}[/bold green]")
+                console.print(f"[bold green] Exportado a Excel: {archivo}[/bold green]")
             except Exception as e:
-                console.print(f"[bold red]✗ Error exportando a Excel:[/bold red] {e}")
+                console.print(f"[bold red Error exportando a Excel:[/bold red] {e}")
             pausa()
             continue
 
         # --- exportar PDF ---
         if opcion == "5":
             if not pedidos:
-                console.print("[bold yellow]⚠ No hay pedidos para exportar.[/bold yellow]")
+                console.print("[bold yellow] No hay pedidos para exportar.[/bold yellow]")
                 pausa()
                 continue
             archivo = console.input("Nombre archivo destino (ej: reporte_pedidos.pdf): ").strip() or "reporte_pedidos.pdf"
             try:
                 PersistenciaJSON.exportar_pedidos_pdf(archivo, pedidos, titulo="Reporte de Pedidos")
-                console.print(f"[bold green]✔ Exportado a PDF: {archivo}[/bold green]")
+                console.print(f"[bold green] Exportado a PDF: {archivo}[/bold green]")
             except Exception as e:
-                console.print(f"[bold red]✗ Error exportando a PDF:[/bold red] {e}")
+                console.print(f"[bold red] Error exportando a PDF:[/bold red] {e}")
             pausa()
             continue
 
-        console.print("[bold red]✗ Opción no válida. Intente de nuevo.[/bold red]")
+        console.print("[bold red] Opción no válida. Intente de nuevo.[/bold red]")
         pausa()
 
 
@@ -715,8 +779,10 @@ def manejar_generar_reporte():
 # ---------------------- MAIN LOOP ----------------------
 if __name__ == "__main__":
     while True:
+ #muestra el menu de opciones para que el usuario seleccione
         mostrar_menu()
         opcion = console.input("\n[bold cyan]>>> Seleccione una opción: [/bold cyan]").strip()
+        
 
         if opcion == '1':
             manejar_crud_productos()
@@ -737,7 +803,7 @@ if __name__ == "__main__":
             console.print(
                 Align.center(
                     Panel(
-                        "🟢 [bold green]Cerrando aplicación...[/bold green]",
+                        " [bold green]Cerrando aplicación...[/bold green]",
                         border_style="green",
                         box=box.ROUNDED,
                         padding=(1, 2)
@@ -764,7 +830,7 @@ if __name__ == "__main__":
 
             # Mensaje final centrado y estético
             despedida = Group(
-                Align.center(Text("✅ Aplicación cerrada correctamente", style="bold green")),
+                Align.center(Text(" Aplicación cerrada correctamente", style="bold blue")),
                 Align.center(Text("by Proyecto No. 1", style="italic yellow"))
             )
             console.print(
