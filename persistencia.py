@@ -1,4 +1,3 @@
-# persistencia.py
 import csv
 import json
 from builtins import FileNotFoundError
@@ -21,23 +20,38 @@ class PersistenciaCSV:
     """Maneja la lectura y escritura en archivos CSV para Productos y Clientes."""
 
     @staticmethod
-    def leer_datos(nombre_archivo, campos):
+    def leer_datos(nombre_archivo: str, campos: list) -> list:
+        """Lee los datos desde un archivo CSV y los devuelve como una lista de diccionarios.
+
+        Si el archivo no existe, lo crea con los encabezados especificados.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo CSV.
+            campos (list): Lista con los nombres de las columnas.
+
+        Returns:
+            list: Lista de diccionarios con los datos leídos del archivo.
+        """
         datos = []
         try:
             with open(nombre_archivo, mode='r', newline='', encoding='utf-8') as file:
-                # Usamos DictReader para leer filas como diccionarios
                 reader = csv.DictReader(file, fieldnames=campos)
-                next(reader, None)  # Saltar la línea de encabezado si existe
+                next(reader, None)  # Saltar encabezado si existe
                 for row in reader:
                     datos.append(row)
         except FileNotFoundError:
-            # Crea el archivo con encabezados si no existe
             PersistenciaCSV.escribir_datos(nombre_archivo, [], campos)
         return datos
 
     @staticmethod
-    def escribir_datos(nombre_archivo, lista_objetos, campos):
-        """Escribe una lista de objetos (con método .to_dict()) al CSV."""
+    def escribir_datos(nombre_archivo: str, lista_objetos: list, campos: list) -> None:
+        """Escribe una lista de objetos (que tengan método `.to_dict()`) en un archivo CSV.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo CSV a escribir.
+            lista_objetos (list): Lista de objetos que implementan `to_dict()`.
+            campos (list): Lista con los nombres de las columnas.
+        """
         with open(nombre_archivo, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=campos)
             writer.writeheader()
@@ -50,41 +64,58 @@ class PersistenciaCSV:
 # =======================
 
 class PersistenciaJSON:
-    """Maneja la lectura y escritura en archivos JSON para Pedidos."""
+    """Maneja la lectura, escritura y exportación de pedidos en formato JSON, Excel y PDF."""
 
     @staticmethod
-    def leer_pedidos(nombre_archivo):
+    def leer_pedidos(nombre_archivo: str) -> list:
+        """Lee los pedidos desde un archivo JSON.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo JSON.
+
+        Returns:
+            list: Lista de pedidos (diccionarios). Si no existe o está vacío, devuelve una lista vacía.
+        """
         try:
             with open(nombre_archivo, 'r', encoding='utf-8') as file:
                 return json.load(file)
         except FileNotFoundError:
             return []
         except json.JSONDecodeError:
-            print(
-                f"[bold yellow]Advertencia:[/bold yellow] Archivo '{nombre_archivo}' vacío o corrupto. Inicializando lista de pedidos vacía.")
+            print(f"[bold yellow]Advertencia:[/bold yellow] Archivo '{nombre_archivo}' vacío o corrupto. Se inicializa vacío.")
             return []
 
     @staticmethod
-    def escribir_pedidos(nombre_archivo, pedidos):
+    def escribir_pedidos(nombre_archivo: str, pedidos: list) -> None:
+        """Guarda una lista de pedidos en un archivo JSON.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo JSON a guardar.
+            pedidos (list): Lista de pedidos (diccionarios) a escribir.
+        """
         with open(nombre_archivo, 'w', encoding='utf-8') as file:
-            # Usamos indent=4 para que el JSON sea legible
             json.dump(pedidos, file, indent=4)
 
     # --------------------------
-    # Export / Utilities
+    # Export / Utilidades
     # --------------------------
 
     @staticmethod
-    def exportar_pedidos_excel(nombre_archivo: str, pedidos: List[Dict]):
-        """
-        Exporta pedidos a un archivo Excel.
-        Crea 2 hojas: 'Pedidos' (resumen por pedido) y 'Items' (cada producto por fila vinculando id_pedido).
+    def exportar_pedidos_excel(nombre_archivo: str, pedidos: List[Dict]) -> None:
+        """Exporta los pedidos a un archivo Excel (.xlsx).
+
+        Crea dos hojas:
+        - "Pedidos": resumen de cada pedido.
+        - "Items": detalle de cada producto asociado a los pedidos.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo Excel de salida.
+            pedidos (List[Dict]): Lista de pedidos con sus items.
         """
         wb = Workbook()
         ws1 = wb.active
         ws1.title = "Pedidos"
 
-        # Encabezados resumen pedidos
         encabezados = ["id_pedido", "id_cliente", "nombre_cliente", "fecha_pedido", "total_pedido"]
         ws1.append(encabezados)
 
@@ -97,11 +128,9 @@ class PersistenciaJSON:
                 p.get("total_pedido"),
             ])
 
-        # Ajustar ancho columnas de forma sencilla
         for i, col in enumerate(encabezados, 1):
             ws1.column_dimensions[get_column_letter(i)].width = max(len(col) + 2, 10)
 
-        # Hoja de items
         ws2 = wb.create_sheet(title="Items")
         encabezados_items = ["id_pedido", "id_producto", "nombre", "cantidad", "precio_unitario", "subtotal"]
         ws2.append(encabezados_items)
@@ -116,25 +145,37 @@ class PersistenciaJSON:
                     it.get("precio_unitario"),
                     it.get("subtotal"),
                 ])
+
         for i, col in enumerate(encabezados_items, 1):
             ws2.column_dimensions[get_column_letter(i)].width = max(len(col) + 2, 10)
 
         wb.save(nombre_archivo)
 
     @staticmethod
-    def exportar_pedidos_pdf(nombre_archivo: str, pedidos: List[Dict], titulo: str = "Reporte de Pedidos"):
+    def exportar_pedidos_pdf(nombre_archivo: str, pedidos: List[Dict], titulo: str = "Reporte de Pedidos") -> None:
+        """Genera un archivo PDF con el resumen e items de los pedidos.
+
+        Usa ReportLab para crear una tabla de pedidos y otra con los items correspondientes.
+
+        Args:
+            nombre_archivo (str): Nombre o ruta del archivo PDF a generar.
+            pedidos (List[Dict]): Lista de pedidos con sus items.
+            titulo (str, opcional): Título del reporte. Por defecto es "Reporte de Pedidos".
         """
-        Exporta un PDF con un resumen de pedidos y una tabla de items.
-        Usa reportlab; la salida es básica pero legible.
-        """
-        doc = SimpleDocTemplate(nombre_archivo, pagesize=landscape(letter), rightMargin=18, leftMargin=18, topMargin=18, bottomMargin=18)
+        doc = SimpleDocTemplate(
+            nombre_archivo,
+            pagesize=landscape(letter),
+            rightMargin=18,
+            leftMargin=18,
+            topMargin=18,
+            bottomMargin=18
+        )
         styles = getSampleStyleSheet()
         flowables = []
 
         flowables.append(Paragraph(titulo, styles["Title"]))
         flowables.append(Spacer(1, 8))
 
-        # Tabla resumen de pedidos
         pedidos_encabezado = ["ID", "Fecha", "Cliente", "Total"]
         datos_pedidos = [pedidos_encabezado]
         for p in pedidos:
@@ -157,7 +198,6 @@ class PersistenciaJSON:
         flowables.append(t)
         flowables.append(Spacer(1, 12))
 
-        # Items: lista todos los items (puede ser larga)
         items_encabezado = ["Pedido ID", "ID Producto", "Nombre", "Cantidad", "Precio unit.", "Subtotal"]
         datos_items = [items_encabezado]
         for p in pedidos:
@@ -186,8 +226,17 @@ class PersistenciaJSON:
         doc.build(flowables)
 
     @staticmethod
-    def filtrar_pedidos_por_fecha(pedidos, desde=None, hasta=None):
-        """Filtra los pedidos según un rango de fechas (YYYY-MM-DD)."""
+    def filtrar_pedidos_por_fecha(pedidos: list, desde: str = None, hasta: str = None) -> list:
+        """Filtra los pedidos por un rango de fechas (YYYY-MM-DD).
+
+        Args:
+            pedidos (list): Lista de pedidos a filtrar.
+            desde (str, opcional): Fecha inicial del rango (formato YYYY-MM-DD).
+            hasta (str, opcional): Fecha final del rango (formato YYYY-MM-DD).
+
+        Returns:
+            list: Lista de pedidos que se encuentran dentro del rango especificado.
+        """
         import datetime
 
         def parse_fecha(fecha_str):
