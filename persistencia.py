@@ -99,7 +99,7 @@ class PersistenciaJSON:
 
     @staticmethod
     def exportar_pedidos_excel(nombre_archivo: str, pedidos: List[Dict]) -> None:
-        """Exporta los pedidos a un archivo Excel 
+        """Exporta los pedidos a un archivo Excel
 
         Crea dos hojas:
         - "Pedidos": resumen de cada pedido.
