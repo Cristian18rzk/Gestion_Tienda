@@ -9,7 +9,7 @@ console.print("[bold blue]¡Rich está funcionando en azul![/bold blue]")
 
 class Producto:
     """
-    Representa un producto disponible en la tienda.
+    Muestra un producto disponible en la tienda.
 
     Atributos:
         id_producto (int): Identificador único del producto.
@@ -40,10 +40,6 @@ class Producto:
         Returns:
             str: Cadena con el ID, nombre, precio y stock del producto.
 
-        Ejemplo:
-            >>> p = Producto(1, "Martillo", 25000, 10)
-            >>> print(p)
-            ID: 1 | Nombre: Martillo | Precio: $25000.00 | Stock: 10
         """
         return f"ID: {self.id_producto} | Nombre: {self.nombre} | Precio: ${self.precio:.2f} | Stock: {self.stock}"
 
@@ -59,7 +55,7 @@ class Producto:
 
 class Cliente:
     """
-    Representa un cliente de la tienda.
+    Crea un cliente en la tienda.
 
     Atributos:
         id_cliente (int): Identificador único del cliente.
@@ -69,7 +65,7 @@ class Cliente:
 
     def __init__(self, id_cliente, nombre, email):
         """
-        Inicializa un nuevo cliente con su información básica.
+        Inicializa un nuevo cliente con su información.
 
         Args:
             id_cliente (int): ID único del cliente.
@@ -86,11 +82,6 @@ class Cliente:
 
         Returns:
             str: Cadena con el ID, nombre y correo del cliente.
-
-        Ejemplo:
-            >>> c = Cliente(1, "Juan Pérez", "juan@example.com")
-            >>> print(c)
-            ID: 1 | Nombre: Juan Pérez | Email: juan@example.com
         """
         return f"ID: {self.id_cliente} | Nombre: {self.nombre} | Email: {self.email}"
 
@@ -250,10 +241,10 @@ class Tienda:
 
     def crear_pedido(self, id_cliente, productos_con_cantidad):
         """
-        Crea un nuevo pedido para un cliente, actualizando el inventario.
+        Crea un nuevo pedido para un cliente y actualizando el inventario.
 
         Args:
-            id_cliente (int): ID del cliente que realiza el pedido.
+            id_cliente (int): es el cliente que realiza el pedido.
             productos_con_cantidad (dict): Diccionario con ID del producto y cantidad.
 
         Raises:
@@ -331,7 +322,7 @@ class Tienda:
 
     def buscar_productos_por_nombre(self, termino):
         """
-        Busca productos que contengan una palabra en su nombre.
+        Busca los productos que contengan una palabra en su nombre.
 
         Args:
             termino (str): Palabra o parte del nombre del producto.

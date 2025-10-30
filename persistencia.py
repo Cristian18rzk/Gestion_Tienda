@@ -12,9 +12,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table as RLTable, TableStyle, Paragraph, Spacer
 
 
-# =======================
-# Lógica de Persistencia CSV
-# =======================
 
 class PersistenciaCSV:
     """Maneja la lectura y escritura en archivos CSV para Productos y Clientes."""
@@ -45,7 +42,7 @@ class PersistenciaCSV:
 
     @staticmethod
     def escribir_datos(nombre_archivo: str, lista_objetos: list, campos: list) -> None:
-        """Escribe una lista de objetos (que tengan método `.to_dict()`) en un archivo CSV.
+        """Escribe una lista de objetos
 
         Args:
             nombre_archivo (str): Nombre o ruta del archivo CSV a escribir.
@@ -59,9 +56,9 @@ class PersistenciaCSV:
                 writer.writerow(obj.to_dict())
 
 
-# =======================
+
 # Lógica de Persistencia JSON
-# =======================
+
 
 class PersistenciaJSON:
     """Maneja la lectura, escritura y exportación de pedidos en formato JSON, Excel y PDF."""
@@ -96,13 +93,13 @@ class PersistenciaJSON:
         with open(nombre_archivo, 'w', encoding='utf-8') as file:
             json.dump(pedidos, file, indent=4)
 
-    # --------------------------
+
     # Export / Utilidades
-    # --------------------------
+
 
     @staticmethod
     def exportar_pedidos_excel(nombre_archivo: str, pedidos: List[Dict]) -> None:
-        """Exporta los pedidos a un archivo Excel (.xlsx).
+        """Exporta los pedidos a un archivo Excel
 
         Crea dos hojas:
         - "Pedidos": resumen de cada pedido.

@@ -69,14 +69,14 @@ def pausa():
 def imprimir_encabezado():
     """Imprime el encabezado principal de la aplicación en consola."""
     console.clear()
-    logo_texto = """[bold green]
+    logo_texto = """[bold blue]
  ████████╗██╗██╗██████╗ ███╗   ██╗██████╗  █████╗ 
  ╚══██╔══╝██║██║██╔══  ╗████╗  ██║██╔══██╗██╔══██╗
     ██║   ██║██║██║██  ║██╔██╗ ██║██║  ██║███████║
     ██║   ██║██║██║    ║██║╚██╗██║██║  ██║██╔══██║
     ██║   ██║██║██████╔╝██║ ╚████║██████╔╝██║  ██║
     ╚═╝   ╚═╝╚═╝╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝
-[/bold green]"""
+[/bold blue]"""
     logo_panel = Panel(
         Align.center(logo_texto),
         border_style="green",
@@ -352,7 +352,7 @@ def manejar_crud_clientes():
             pausa()
 
 
-# ---------------------- CREAR NUEVO PEDIDO ----------------------
+#  CREAR NUEVO PEDIDO
 def manejar_crear_pedido():
     """Permite crear nuevos pedidos de productos por parte de los clientes.
 
@@ -555,7 +555,7 @@ def mostrar_historial_pedidos():
     pausa()
 
 
-# ---------------------- BUSCAR PRODUCTOS POR NOMBRE ----------------------
+#  BUSCAR PRODUCTOS POR NOMBRE
 def manejar_buscar_productos():
     """Permite buscar productos por su nombre dentro de la tienda.
 
@@ -686,7 +686,7 @@ def manejar_generar_reporte():
             pausa()
             continue
 
-        # --- estadísticas históricas (por mes, top productos) ---
+        # --- estadísticas históricas (por mes, top productos)
         if opcion == "3":
             if not pedidos:
                 console.print("[bold yellow] No hay pedidos para generar estadísticas.[/bold yellow]")
@@ -741,7 +741,7 @@ def manejar_generar_reporte():
             pausa()
             continue
 
-        # --- exportar Excel ---
+        #  exportar Excel
         if opcion == "4":
             if not pedidos:
                 console.print("[bold yellow] No hay pedidos para exportar.[/bold yellow]")
@@ -776,7 +776,7 @@ def manejar_generar_reporte():
 
 
 
-# ---------------------- MAIN LOOP ----------------------
+#  MAIN LOOP
 if __name__ == "__main__":
     while True:
  #muestra el menu de opciones para que el usuario seleccione
@@ -827,22 +827,6 @@ if __name__ == "__main__":
 
             sleep(0.3)
             console.clear()
-
-            # Mensaje final centrado y estético
-            despedida = Group(
-                Align.center(Text(" Aplicación cerrada correctamente", style="bold blue")),
-                Align.center(Text("by Proyecto No. 1", style="italic yellow"))
-            )
-            console.print(
-                Align.center(
-                    Panel(
-                        despedida,
-                        border_style="green",
-                        box=box.ROUNDED,
-                        padding=(1, 2)
-                    )
-                )
-            )
 
             sleep(1.5)
             console.clear()
